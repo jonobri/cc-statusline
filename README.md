@@ -10,10 +10,19 @@ Shows, per column (each toggleable in `config.jsonc`):
 - **Context** — context-window usage, small bar + percentage.
 - Plus the usual: Model, Version (with last-fetch time), git branch/dirty state, session cost/duration, token counts, running-agent tree, todo progress.
 
-## Setup
+## Requirements
 
-1. Copy `metricc-cc-statusbar.mjs` and `config.jsonc` to `~/.claude/hud/`.
-2. Point Claude Code at it in `~/.claude/settings.json`:
+- [Claude Code](https://claude.com/claude-code) CLI, already logged in — this script reads the same OAuth credentials Claude Code itself uses (from `~/.claude/.credentials.json`, or the macOS Keychain as a fallback), so there's no separate auth step.
+- Node.js (any reasonably recent version). No `npm install` needed — the script uses only Node's built-in modules, zero third-party dependencies.
+- macOS or Linux. (The Keychain fallback is macOS-only, but the primary credentials-file path works anywhere Claude Code runs.)
+
+## Installation
+
+1. Clone this repo into `~/.claude/hud`:
+   ```sh
+   git clone https://github.com/jonobri/cc-statusline.git ~/.claude/hud
+   ```
+2. Point Claude Code at it — add this to `~/.claude/settings.json` (merge it in if the file already has other keys):
    ```json
    {
      "statusLine": {
@@ -23,7 +32,16 @@ Shows, per column (each toggleable in `config.jsonc`):
      }
    }
    ```
-3. Edit `config.jsonc` to toggle columns / switch `layout` between `"vertical"` (stacked label-over-value, wraps onto extra rows) and `"horizontal"` (`label value` cells packed left to right).
+3. Start a new Claude Code session (or restart your current one) — the statusline should appear at the bottom on the next render. If it just says `[HUD] waiting for data...`, that's normal for the very first render; it resolves as soon as Claude Code sends its first status payload.
+4. (Optional) edit `config.jsonc` to toggle columns on/off, or switch `layout` between `"vertical"` (stacked label-over-value, wraps onto extra rows) and `"horizontal"` (`label value` cells packed left to right). The script falls back to sensible defaults if this file is missing entirely, so this step can be skipped.
+
+### Updating
+
+```sh
+cd ~/.claude/hud && git pull
+```
+
+Your local `config.jsonc` edits will conflict with upstream changes to that same file on `git pull` if both touched it — resolve as you would any other git conflict, or `git stash` your local edits first if you'd rather reapply them after.
 
 ## How the burn-rate math works
 
