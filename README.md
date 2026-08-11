@@ -2,6 +2,8 @@
 
 A custom [Claude Code](https://claude.com/claude-code) statusline: no plugin dependencies, just a Node script Claude Code invokes and pipes JSON into on every render.
 
+![Screenshot](screenshot.png)
+
 Shows, per column (each toggleable in `config.jsonc`):
 
 - **5h Usage / 7d Usage** — two stacked bars per window: quota used (top), and how far into the window you are (bottom), the second bar coloured by *pace* rather than raw elapsed time — red/yellow if usage is running ahead of the clock, i.e. on track to exhaust the window before it resets.
