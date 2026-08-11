@@ -51,6 +51,10 @@ Burn rate is computed from that log, anchored on `resets_at − window_length` (
 
 Reset-boundary detection skips any interval that crosses a real window reset (so the % dropping back to ~0 doesn't read as a negative rate), and separately drops any sample with a missing/zero `resetsKey` outright — Anthropic's API has been observed to emit one transient garbage sample right at a boundary, and including it corrupts the reset-detection on both of its neighbouring intervals.
 
+## Caveats
+
+The 5h/7d Usage bars and Burn columns rely on `/api/oauth/usage` and the token refresh at `/v1/oauth/token` (`platform.claude.com`) — the same endpoints Claude Code's own CLI uses internally, reached with the same OAuth client ID (a public, native-app client identifier; no secret is stored anywhere in this script). Neither is a documented, stable public API, so Anthropic could change or restrict them without notice, which would silently degrade those columns to `N/A` / `warming up` (everything else — Context, Model, git branch, session cost/duration, token counts — comes from Claude Code's own stdin payload and is unaffected either way).
+
 ## Files
 
 - `metricc-cc-statusbar.mjs` — the script.
