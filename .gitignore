@@ -1,0 +1,6 @@
+# Runtime/cache state — machine-local, regenerated automatically, not config.
+.usage-cache.json
+.usage-history.jsonl
+.version-cache.json
+.usage.lock
+*.tmp-*

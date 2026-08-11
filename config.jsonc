@@ -1,0 +1,38 @@
+{
+  // Columns now wrap onto extra rows instead of being truncated with "…".
+  // 0 = auto-detect the terminal width (/dev/tty, then $COLUMNS, then 120).
+  // Set an explicit number if auto-detect guesses wrong for your pane.
+  "maxWidth": 0,
+
+  "layout": "vertical",
+
+  // ── Standard ──
+  "5h Usage": true,
+  "7d Usage": true,
+  "Context": true,
+  "Model": true,
+  "Version": true,
+
+  // ── Burn rate ── 5h/7d Burn are account-wide (all terminals combined —
+  // Anthropic's usage API has no per-terminal breakdown). This Terminal is
+  // this session's own local $/hr, the only one of the three that isolates
+  // a single terminal.
+  "5h Burn": true,
+  "7d Burn": true,
+  "This Terminal": true,
+
+  // ── Session ──
+  "Session": false,
+  "Changes": true,
+  "Directory": true,
+  "Branch": true,
+  "Cost": false,
+
+  // ── Advanced (off) ──
+  "Tokens": false,
+  "Output Tokens": false,
+  "Cache": false,
+  "API Time": false,
+  "5h Reset": false,
+  "7d Reset": false
+}
