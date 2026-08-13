@@ -838,18 +838,20 @@ function formatResetTime(resetDate) {
 // reset time is known) for the caller to render one-per-row under the label.
 function usageBarValue(pct, resetDate, windowMs) {
   const usageColor = colorForPercent(pct, 60, 80);
-  const bar1 = drawBar(pct, 10, usageColor);
+  // Width 6 — one wider than the Context bar (5, line ~1004). Matched
+  // exactly at first but read one char too cramped at this size.
+  const bar1 = drawBar(pct, 6, usageColor);
   const roundedPct = Math.round(pct);
-  const line1 = `${bar1}${c.slate600}${roundedPct}%${c.reset}`;
+  const line1 = `${bar1} ${c.slate600}${roundedPct}%${c.reset}`;
   const msUntilReset = resetDate ? resetDate.getTime() - Date.now() : null;
   const validWindow = msUntilReset != null && msUntilReset > 0 && msUntilReset <= windowMs;
   if (!validWindow) return [line1];
   const elapsedPct = Math.max(0, Math.min(100, ((windowMs - msUntilReset) / windowMs) * 100));
   const paceDelta = pct - elapsedPct;
   const paceColor = paceDelta >= 15 ? c.red : paceDelta >= 5 ? c.yellow : c.green;
-  const bar2 = drawBar(elapsedPct, 10, paceColor);
+  const bar2 = drawBar(elapsedPct, 6, paceColor);
   const remaining = remainingShort(resetDate) ?? "now";
-  const line2 = `${bar2}${paceColor}${remaining}${c.reset}`;
+  const line2 = `${bar2} ${paceColor}${remaining}${c.reset}`;
   return [line1, line2];
 }
 
