@@ -9,7 +9,7 @@
  * - Transcript JSONL (session start, running agents)
  */
 
-import { existsSync, readFileSync, writeFileSync, statSync, openSync, readSync, closeSync, mkdirSync, createReadStream, renameSync, unlinkSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, statSync, openSync, readSync, closeSync, mkdirSync, createReadStream, renameSync, unlinkSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, dirname, basename } from "node:path";
 import { createInterface } from "node:readline";
@@ -47,7 +47,7 @@ const ALL_COLUMNS = [
   "5h Usage", "7d Usage", "Context", "Model", "Version",
   // Burn rate — 5h/7d Burn are account-wide (Anthropic's usage API has no
   // per-terminal breakdown); This Terminal is this session's own local rate.
-  "5h Burn", "7d Burn", "This Terminal",
+  "5h Burn", "7d Burn", "This Terminal", "Peers",
   // Session
   "Session", "Changes", "Directory", "Branch", "Cost",
   // Advanced
@@ -99,7 +99,7 @@ const SECTION_DEFAULTS = {
   // Standard: on by default
   "5h Usage": true, "7d Usage": true, "Context": true, "Model": true, "Version": true,
   // Burn rate: on by default
-  "5h Burn": true, "7d Burn": true, "This Terminal": true,
+  "5h Burn": true, "7d Burn": true, "This Terminal": true, "Peers": true,
   // Session: off by default
   "Session": false, "Changes": false, "Directory": false, "Branch": false, "Cost": false,
   // Advanced: off by default
@@ -889,6 +889,30 @@ function sessionBurnValue(cost) {
   return `${c.slate600}$${rate.toFixed(2)}/hr${c.reset}`;
 }
 
+// Other Claude sessions running on this machine, counted from their unix
+// sockets in /tmp/cc-socks — one per live session, so the count is exact and
+// costs a single readdir.
+//
+// Deliberately count only. A "N quiet" companion was tried and removed: the
+// only shell-visible activity signal is transcript mtime, and transcripts
+// outlive their sessions by hours (17 recent files against 7 live sessions when
+// this was written), so the quiet figure saturated and always read "7 · 7
+// quiet". Stall detection needs session status — busy vs idle vs waiting —
+// which lives in ListAgents and is reachable only from inside a session. That
+// is what ~/.claude/bin/mayor-watch.sh and /mayor are for; this segment answers
+// "how many are running", nothing more.
+function peersValue() {
+  let total;
+  try {
+    total = readdirSync("/tmp/cc-socks").filter((f) => f.endsWith(".sock")).length;
+  } catch {
+    return `${c.slate600}—${c.reset}`;
+  }
+  const peers = Math.max(0, total - 1); // this session holds one of them
+  if (peers === 0) return `${c.slate600}none${c.reset}`;
+  return `${c.green}●${c.reset} ${c.slate600}${peers}${c.reset}`;
+}
+
 function stripAnsi(str) {
   return str.replace(/\x1b\[[0-9;]*m/g, "");
 }
@@ -1026,8 +1050,17 @@ function render(usage, burn5h, burn7d, transcript, contextPct, modelId, version,
   // (dollars vs. %-of-quota; there's no published token→quota conversion to
   // bridge them), but with several terminals running it answers "which one
   // is the heavy one" that the account-wide numbers can't.
+  // Peers stacks as a sub-line under This Terminal rather than taking its own
+  // column — same pattern as Version/Updated. Both are "about this machine
+  // right now", and a whole column for one short count wasted the width.
   if (show("This Terminal")) {
-    columns.push({ label: `${c.slate800bold}This Terminal:${c.reset}`, value: sessionBurnValue(cost) });
+    const lines = [sessionBurnValue(cost)];
+    if (show("Peers")) lines.push(`${c.slate800}Peers:${c.reset} ${peersValue()}`);
+    columns.push({ label: `${c.slate800bold}This Terminal:${c.reset}`, value: lines });
+  } else if (show("Peers")) {
+    // Standalone fallback when This Terminal is switched off, so enabling Peers
+    // alone still renders something.
+    columns.push({ label: `${c.slate800bold}Peers:${c.reset}`, value: peersValue() });
   }
 
   // Version, with the usage-data fetch time stacked underneath — the bars'

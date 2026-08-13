@@ -21,6 +21,12 @@
   "7d Burn": true,
   "This Terminal": true,
 
+  // ── Peers ── Other Claude sessions on this machine: live count (from the
+  // sockets in /tmp/cc-socks, so it's exact) and how many have gone quiet for
+  // 15min+. Presence only — a statusline can't reach ListAgents, so it can't
+  // show busy/idle/waiting or who's blocked on you. Run /mayor for that.
+  "Peers": true,
+
   // ── Session ──
   "Session": false,
   "Changes": true,
